@@ -5,7 +5,7 @@ import { Filters } from './components/Filters';
 import { MetricsCard } from './components/MetricsCard';
 import { DataTable } from './components/DataTable';
 import { Charts } from './components/Charts';
-import { SettlementReport, AuthorizationReport, PaymentChannel, Timezone } from './types/transaction';
+import { SettlementReport, AuthorizationReport, PaymentChannel, Timezone, FeeComponent } from './types/transaction';
 import { parseSettlementReport, parseAuthorizationReport } from './utils/csvParser';
 import { calculateMetrics, getUniqueCountries, aggregateMetrics } from './utils/analytics';
 import { formatCurrency } from './utils/format';
@@ -20,6 +20,7 @@ function App() {
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [selectedPaymentChannels, setSelectedPaymentChannels] = useState<PaymentChannel[]>([]);
   const [timezone, setTimezone] = useState<Timezone>('GMT+0');
+  const [selectedFeeComponents, setSelectedFeeComponents] = useState<FeeComponent[]>(['transaction_fee']);
 
   const handleSettlementUpload = (content: string) => {
     const data = parseSettlementReport(content);
@@ -42,8 +43,9 @@ function App() {
       countries: selectedCountries,
       paymentChannels: selectedPaymentChannels,
       timezone,
+      feeComponents: selectedFeeComponents,
     })
-  ), [settlementData, authorizationData, startDate, endDate, selectedCountries, selectedPaymentChannels, timezone]);
+  ), [settlementData, authorizationData, startDate, endDate, selectedCountries, selectedPaymentChannels, timezone, selectedFeeComponents]);
 
   const aggregated = useMemo(() => aggregateMetrics(metrics), [metrics]);
   const avgApprovalRatio = useMemo(() => (
@@ -78,11 +80,13 @@ function App() {
               availableCountries={availableCountries}
               paymentChannels={selectedPaymentChannels}
               timezone={timezone}
+              feeComponents={selectedFeeComponents}
               onStartDateChange={setStartDate}
               onEndDateChange={setEndDate}
               onCountriesChange={setSelectedCountries}
               onPaymentChannelsChange={setSelectedPaymentChannels}
               onTimezoneChange={setTimezone}
+              onFeeComponentsChange={setSelectedFeeComponents}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">

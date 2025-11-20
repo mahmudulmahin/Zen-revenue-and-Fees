@@ -1,4 +1,4 @@
-import { SettlementReport, AuthorizationReport, DashboardMetrics, PaymentChannel, Timezone } from '../types/transaction';
+import { SettlementReport, AuthorizationReport, DashboardMetrics, PaymentChannel, Timezone, FeeComponent } from '../types/transaction';
 import { adjustTimezone, formatDate } from './timezone';
 
 // Toggle verbose debug logging for analytics. Keep false in production for performance.
@@ -10,6 +10,7 @@ interface FilterOptions {
   countries: string[];
   paymentChannels: PaymentChannel[];
   timezone: Timezone;
+  feeComponents?: FeeComponent[];
 }
 
 export const calculateMetrics = (
@@ -89,12 +90,19 @@ export const calculateMetrics = (
     metrics.revenue += amount;
     if (DEBUG) console.log('Added revenue:', amount, 'Total now:', metrics.revenue);
     
-    // Calculate fees more accurately
-    const totalFees = (Number(record.transaction_fee) || 0) + 
-                     (Number(record.interchange_fee) || 0) + 
-                     (Number(record.card_scheme_fee) || 0);
+    // Calculate fees from selected components
+    const feeMap: Record<FeeComponent, number> = {
+      transaction_fee: Number(record.transaction_fee) || 0,
+      interchange_fee: Number((record as any).interchange_fee) || 0,
+      card_scheme_fee: Number((record as any).card_scheme_fee) || 0,
+      secure_deposit_amount: Number(record.secure_deposit_amount) || 0,
+    };
+    const selected = (filters.feeComponents && filters.feeComponents.length > 0)
+      ? filters.feeComponents
+      : (['transaction_fee'] as FeeComponent[]);
+    const totalFees = selected.reduce((sum, key) => sum + (feeMap[key] || 0), 0);
     metrics.fees += totalFees;
-    if (DEBUG) console.log('Added fees:', totalFees, 'Total now:', metrics.fees);
+    if (DEBUG) console.log('Added fees:', totalFees, 'Selected:', selected, 'Total now:', metrics.fees);
   });
 
   // Process authorization data

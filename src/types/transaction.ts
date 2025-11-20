@@ -75,3 +75,4 @@ export interface DashboardMetrics {
 
 export type PaymentChannel = 'Apple Pay' | 'Google Pay' | 'Card';
 export type Timezone = 'GMT+0' | 'GMT+6';
+export type FeeComponent = 'transaction_fee' | 'interchange_fee' | 'card_scheme_fee' | 'secure_deposit_amount';

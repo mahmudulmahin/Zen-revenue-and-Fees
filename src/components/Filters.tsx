@@ -1,4 +1,4 @@
-import { PaymentChannel, Timezone } from '../types/transaction';
+import { PaymentChannel, Timezone, FeeComponent } from '../types/transaction';
 import { MultiSelect } from './MultiSelect';
 import { countryOptionsFromCodes } from '../utils/countries';
 
@@ -9,11 +9,13 @@ interface FiltersProps {
   availableCountries: string[];
   paymentChannels: PaymentChannel[];
   timezone: Timezone;
+  feeComponents: FeeComponent[];
   onStartDateChange: (date: string) => void;
   onEndDateChange: (date: string) => void;
   onCountriesChange: (countries: string[]) => void;
   onPaymentChannelsChange: (channels: PaymentChannel[]) => void;
   onTimezoneChange: (timezone: Timezone) => void;
+  onFeeComponentsChange: (components: FeeComponent[]) => void;
 }
 
 const PAYMENT_CHANNEL_OPTIONS: PaymentChannel[] = ['Apple Pay', 'Google Pay', 'Card'];
@@ -25,11 +27,13 @@ export const Filters = ({
   availableCountries,
   paymentChannels,
   timezone,
+  feeComponents,
   onStartDateChange,
   onEndDateChange,
   onCountriesChange,
   onPaymentChannelsChange,
   onTimezoneChange,
+  onFeeComponentsChange,
 }: FiltersProps) => {
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -86,6 +90,34 @@ export const Filters = ({
             onChange={(vals) => onPaymentChannelsChange(vals as PaymentChannel[])}
             placeholder="All channels"
           />
+        </div>
+
+        <div className="md:col-span-2 lg:col-span-3">
+          <label className="block text-sm font-medium text-gray-700 mb-2">Fee Components</label>
+          <div className="flex flex-wrap gap-4 bg-white border border-gray-300 rounded-lg px-4 py-3">
+            {([
+              'transaction_fee',
+              'interchange_fee',
+              'card_scheme_fee',
+              'secure_deposit_amount',
+            ] as FeeComponent[]).map((key) => (
+              <label key={key} className="inline-flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4"
+                  checked={feeComponents.includes(key)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      onFeeComponentsChange([...feeComponents, key]);
+                    } else {
+                      onFeeComponentsChange(feeComponents.filter((k) => k !== key));
+                    }
+                  }}
+                />
+                <span>{key.replace(/_/g, ' ')}</span>
+              </label>
+            ))}
+          </div>
         </div>
       </div>
     </div>
